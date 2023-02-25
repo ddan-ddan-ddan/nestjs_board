@@ -1,5 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UsePipes, ValidationPipe } from '@nestjs/common';
-import { Board, BoardStatus } from './board.model'
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import { get } from 'http';
+import { BoardStatus } from './board-status.enum'
+import { Board } from './board.entity';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { BoardStatusValidationPipe } from './pipes/board-status-validation.pipe';
@@ -8,33 +10,33 @@ import { BoardStatusValidationPipe } from './pipes/board-status-validation.pipe'
 export class BoardsController {
     constructor(private boardsService: BoardsService ) {}
 
-    @Get('/')
-    getAllBoard(): Board[] { //모든 게시물 가져오기
-        return this.boardsService.getAllBoards();
-    }
-
-    @Post()
-    @UsePipes(ValidationPipe) //파이프사용
-    createBoard(
-        @Body() createBoardDto: CreateBoardDto) : Board {
-        return this.boardsService.createBoard(createBoardDto);
+    @Get()
+    getAll(): Promise<Board[]> {
+        return this.boardsService.getAll();
     }
 
     @Get('/:id')
-    getBoardById(@Param('id') id: string ) : Board {
+    getBoardById(@Param('id') id:number) : Promise<Board> {
         return this.boardsService.getBoardById(id);
     }
 
-    @Delete('/:id')
-    deleteBoard(@Param('id') id: string) : void {
-        this.boardsService.deleteBoard(id);
+    @Post()
+    @UsePipes(ValidationPipe)
+    createBoard(@Body() createBoardDto: CreateBoardDto) {
+        return this.boardsService.createBoard(createBoardDto);
     }
 
-    @Patch('/:id/status')
+    @Delete('/:id')
+    deleteBoard(@Param('id', ParseIntPipe) id): Promise<void> {//ParseIntPipe: 파라미터가 숫자로 잘 되어서 오는지. 
+        return this.boardsService.deleteBoard(id);
+    }
+
+    @Patch('/:id')
     updateBoardStatus(
-        @Param('id') id: string,
-        @Body('status', BoardStatusValidationPipe) status: BoardStatus,
-    ) : Board {
+        @Param('id', ParseIntPipe) id:number,
+        @Body('status') status: BoardStatus
+    ) {
+        console.log("contorller", status);
         return this.boardsService.updateBoardStatus(id, status);
     }
 }
