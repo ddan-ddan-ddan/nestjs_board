@@ -7,14 +7,16 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { User } from './user.entity';
 import { UserRepository } from './user.repository';
+import * as config from 'config';
 
+const jwtConfig = config.get('jwt');
 @Module({
   imports: [
     PassportModule.register({defaultStrategy: 'jwt'}),
     JwtModule.register({ //JWT
-      secret:'Secret1234', //토큰을 만들때 이용하는 Secret Text(아무텍스트 괜찮아)
+      secret:jwtConfig.secret, //토큰을 만들때 이용하는 Secret Text(아무텍스트 괜찮아)
       signOptions: { 
-        expiresIn: 3600 //유효기간 초단위
+        expiresIn: jwtConfig.expiresIn //유효기간 초단위
       }
     }),
     TypeOrmModule.forFeature([User])

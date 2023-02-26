@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Logger, Patch, Post, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/get-user.decoreator';
 import { User } from 'src/auth/user.entity';
@@ -10,7 +10,9 @@ import { CreateBoardDto } from './dto/create-board.dto';
 @Controller('boards')
 @UseGuards(AuthGuard()) //모든 핸들러가 영향을 받음. 토큰이 있어야 가능하게끔
 export class BoardsController {
-    constructor(private boardsService: BoardsService ) {}
+    private logger = new Logger('BoardsController');
+    constructor(
+        private boardsService: BoardsService) {}
 
     @Get()
     getAll(): Promise<Board[]> {
@@ -25,7 +27,9 @@ export class BoardsController {
     @Post()
     @UsePipes(ValidationPipe)
     createBoard(@Body() createBoardDto: CreateBoardDto,
-    @GetUser() user: User) {
+    @GetUser() user: User): Promise<Board> {
+        this.logger.verbose(`User ${user.username} creating a new board.
+        Payload: ${JSON.stringify(createBoardDto)}}`)
         return this.boardsService.createBoard(createBoardDto, user);
     }
 
